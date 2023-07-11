@@ -1,11 +1,9 @@
 import pygame
 from pygame.locals import *
-#import sys
 from jogo.tabuleiro import Tabuleiro 
-#from jogo.movimentos import Move
 from jogo.pecas import *
 from interface_grafica.tela import ALTURA_TELA,LARGURA_TELA
-from interface_grafica.cores import BRANCO, PRETO
+from jogo.movimento_peao import Peao
 
 
 # Inicializa o Pygame
@@ -22,165 +20,131 @@ tabuleiro = Tabuleiro()
 tabuleiro.desenhar_tabuleiro(tela)
  
 
+#Essa parte do código cria uma variável onde o jogo começa e a váriável running de True vira false para continuar o loop.
 running = True
-moving = False
-moving2 = False
-# Loop principal do jogo
-#peca_selecionada = None
 
+turno = "Branco"
 
-#Provavelmente da o movimento da imagem, mas ainda é incerto
-largura_celula = LARGURA_TELA // 8
-altura_celula = ALTURA_TELA // 8
-
-
-#Define as posições iniciais
-posicao_inicial = (0,1)
-posicao_inicial2 = (1,1)
-
-
-#Define as posições atuais
-posicao_atual = posicao_inicial
-posicao_atual2 = posicao_inicial2
-
-
-#Essa variavel ajusta a posição para o tamanho do tabuleiro
-x, y = tabuleiro.convert_pos_to_coord(posicao_atual)
-x2,y2 = tabuleiro.convert_pos_to_coord(posicao_atual2)
-
-
-#Essa variavel aqui ajusta a imagem peão.
-rect = pygame.Rect(x, y, altura_celula, largura_celula)
-#ajusta a imagem do segundo peão branco
-rect2 = pygame.Rect(x2,y2,altura_celula,largura_celula)
-
-
-#Carrega as imagens
+#Carrega as imagens do peão
 white_panw_img = load_image('whitepanw.png')
-#white_panw_img2 = load_image('whitepanw.png')
+black_panw_img = load_image('blackpanw.png')
 
+
+#Fiz um list compreheension para não ter que ficar definindo os 8 peões
+# Cria todos os peões brancos
+peao_branco = [Peao("Branco",(i,1), white_panw_img) for i in range(0,8)]
+
+# Cria todos os peões pretos
+peao_preto = [Peao("Preto",(i,6), black_panw_img) for i in range(0,8)]
+
+#Looping principal que faz o jogo ou engine rodar.
 while running:
-     tabuleiro.desenhar_tabuleiro(tela)
-     for event in pygame.event.get():
+    #Desenha o tabuleiro do meu jogo de xadrez.
+    tabuleiro.desenhar_tabuleiro(tela)
+    
+    #Para o evento rodando, o pygame irá capturar todas as movimentações do meu game.
+    for event in pygame.event.get():
+        
+        #Se o tipo evento for para sair do jogo, a condição do looping será quebrada e irá fechar a janela do meu jogo atual.
         if event.type == pygame.QUIT:
-              running = False
-              
-        # Movimenta as peças com o mouse
-        elif event.type == pygame.MOUSEBUTTONDOWN: #and not peca_selecionada:
+            running = False
+
+        #Se o botão do mouse for pressionado, a variavel evento irá ser chamada para iterar e executar os movimentos das peças.
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             
-            
-            if rect.collidepoint(event.pos):
-               moving = True  
-            
-               
-            elif rect2.collidepoint(event.pos):
-               moving2 = True
-        
-        
-        # Verifica se o jogador moveu a peça selecionada
-        elif event.type == pygame.MOUSEBUTTONUP: #and peca_selecionada:
-            
-            #Movimenta o peão 1
-            if moving: 
+            #Se o turno for a vez das peças brancas.
+            if turno == "Branco":
+                
+                #Para iterar em cada peão branco.
+                for pb in peao_branco:
+                    
+                    #O collidepoint é o ponto de colisão das peças, cada imagem tem um ponto de colisão, quando ele é acionado, ele inicia o movimento.
+                    if pb.rect.collidepoint(event.pos):
+                        
+                        #A variavel tabuleiro faz o papel de calcular as casas que podem ser "Preenchidas" pelas peças.
+                        tabuleiro.calcular_casas_destacadas(pb,turno)
+                        
+                        #Inicia a movimentação do peão.
+                        pb.iniciar_movimento(event)
+                        
+           #Vez das peças pretas.
+            elif turno == "Preto":
                  
-                 #Define a posição nova no começo da condição
-                 posicao_nova = (rect.x//tabuleiro.tamanho_quadrado,rect.y//tabuleiro.tamanho_quadrado)
-                                                             #Essa parte aqui da variavel resolve o passant
-                 if posicao_nova[1] == posicao_atual[1]+1 or posicao_nova[1] == 3 and max(round(posicao_nova[0]), 0) == posicao_atual[0]:
-                     posicao_atual = (max(round(posicao_nova[0]), 0),posicao_nova[1] if posicao_nova[1] < 8 else posicao_atual[1])          
-                     print(posicao_atual)
-                     #Essa linha aqui faz a casa do tabuleiro atrair a imagem
-                     rect.topleft = tabuleiro.convert_pos_to_coord(posicao_atual)
+                 #Looping para iterar em cada peça preta.
+                 for pb2 in peao_preto:
                     
-                 else:                 
-                    
-                    #Isso que faz a peça não poder ir para outras casas se a condição anterior não for cumprida
-                    rect.topleft = tabuleiro.convert_pos_to_coord(posicao_atual)
-                   
-                 #Isso faz com que a peça seja solta do mouse
-                 moving = False
-               
-            elif moving2:
-                 posicao_nova2 = (rect2.x//tabuleiro.tamanho_quadrado,rect2.y//tabuleiro.tamanho_quadrado)
-                                             #Essa parte aqui da variavel resolve o passant
-                 if posicao_nova2[1] == posicao_atual2[1]+1 and max(round(posicao_nova2[0]), 1) == posicao_atual2[0]:
-                     
-                     #Atualiza a posição
-                     posicao_atual2 = (max(round(posicao_nova2[0]), 1),posicao_nova2[1] if posicao_nova2[1] < 8 else posicao_atual2[1])       
-                     
-                     
-                     #Essa linha aqui faz a casa do tabuleiro atrair a imagem
-                     rect2.topleft = tabuleiro.convert_pos_to_coord(posicao_atual2)
-                    
-                 else:                 
-                    
-                    #Isso que faz a peça não poder ir para outras casas se a condição anterior não for cumprida
-                    rect2.topleft = tabuleiro.convert_pos_to_coord(posicao_atual2)
-                    
-                 #Isso faz com que a peça seja solta do mouse
-                 # mover o segundo peão ...
-                 moving2 = False
+                    #Ponto de colisão dos peões pretos.
+                    if pb2.rect.collidepoint(event.pos):
+                        
+                        #Calcula as possíveis casas.
+                        tabuleiro.calcular_casas_destacadas(pb2,turno)
+                        
+                        #Inicia o movimento
+                        pb2.iniciar_movimento(event)
+                       
+
         
-
-        #Move com o mouse
+        
         elif event.type == pygame.MOUSEMOTION:
+            if turno == "Branco":
+                for pb in peao_branco:
+                    if pb.moving:
+                        pb.mover(event)
+                        
             
-            #Move o peão 1
-            if moving:
-             rect.move_ip(event.rel)    
+            elif turno == "Preto":
+                 for pb2 in peao_preto:
+                    if pb2.moving:
+                        pb2.mover(event)
+                        
+
+        
+        
+        elif event.type == pygame.MOUSEBUTTONUP:
+           
+            #Turno das peças brancas.
+            if turno == "Branco":
+                
+                #looping para iterar em cada peão.
+                for pb in peao_branco:
+                    
+                    if pb.moving:
+                        
+                        pb.finalizar_movimento(event)
+                       
+                        # Se o movimento for correto, ele passa na condição e troca de turno
+                        if pb.mov_correto:
+                          
+                          #Variável que troca de turno
+                          turno = "Preto"
+                       
             
-            #Move o peão 2 
-            elif moving2:
-             rect2.move_ip(event.rel)
-          
-
-        #Desenha as imagens na tela
-        #Desenha o peão 1
-        tela.blit(white_panw_img, rect)
-       
-        #Desenha o peão 2
-        tela.blit(white_panw_img, rect2)
-        pygame.display.update()
-
-
-   
-   
-   
-   
-   
-  
+            # Turno das peças pretas.
+            elif turno == "Preto":
+                
+                #Looping para iterar cada peão preto.
+                for pb2 in peao_preto:
+                    
+                    if pb2.moving:
+                        
+                        #Finaliza o movimento do peão preto
+                        pb2.finalizar_movimento(event)
+                       
+                       #Se o movimento for correto.
+                        if pb2.mov_correto:
+                          
+                          #Variável que troca de turno
+                          turno = "Branco"
+                        
 
 
-
-  
-
-
-  
-
-
-
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        #Cria as imagens dentro do jogo do peão branco
+        for pb in peao_branco:
+         tela.blit(pb.imagem, pb.rect)
+        
+        #Cria as imagens dentro do jogo do peão preto
+        for pb2 in peao_preto:
+         tela.blit(pb2.imagem, pb2.rect)
+      
+        #Atualiza a tela do tabuleiro
+        pygame.display.update()      
