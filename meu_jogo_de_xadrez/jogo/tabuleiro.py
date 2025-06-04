@@ -7,6 +7,9 @@ class Tabuleiro:
         self.tamanho_quadrado = 75
         self.estado_tabuleiro = [[None for _ in range(8)] for _ in range(8)]
         self.casas_destacadas = []
+        self.pecas_brancas = []
+        self.pecas_pretas = []
+        self.en_passant_pawn = None
 
     def convert_pos_to_coord(self, pos):
         x, y = pos
@@ -45,7 +48,12 @@ class Tabuleiro:
                 alvo = self.estado_tabuleiro[captura[1]][captura[0]]
                 if alvo is not None and alvo.cor != peca.cor:
                     self.casas_destacadas.append(captura)
-
+                elif (
+                    self.en_passant_pawn is not None
+                    and self.en_passant_pawn.posicao == (x + dx, y)
+                    and self.en_passant_pawn.cor != peca.cor
+                ):
+                    self.casas_destacadas.append(captura)
     def ocupado(self, pos):
         x, y = pos
         return self.estado_tabuleiro[y][x] is not None
@@ -61,3 +69,14 @@ class Tabuleiro:
     def remover_peca(self, pos):
         x, y = pos
         self.estado_tabuleiro[y][x] = None
+
+    def capturar_peca(self, pos):
+        x, y = pos
+        peca = self.estado_tabuleiro[y][x]
+        self.estado_tabuleiro[y][x] = None
+        if peca is not None:
+            if peca.cor == "Branco" and peca in self.pecas_brancas:
+                self.pecas_brancas.remove(peca)
+            elif peca.cor == "Preto" and peca in self.pecas_pretas:
+                self.pecas_pretas.remove(peca)
+        return peca

@@ -15,6 +15,7 @@ class Peao:
         self.mov_correto = False
         self.contador_mov = 0
         self._offset = (0, 0)
+        self.en_passant_ativo = False
 
     def iniciar_movimento(self, event):
         if event.button == 1 and self.rect.collidepoint(event.pos):
@@ -35,16 +36,39 @@ class Peao:
                 round(self.rect.y / self.board.tamanho_quadrado),
             )
             if nova_pos in self.board.casas_destacadas:
-                self.board.remover_peca(self.posicao)
-                if not self.board.casa_livre(nova_pos):
-                    self.board.remover_peca(nova_pos)
+                origem = self.posicao
+                self.board.remover_peca(origem)
+
+                # captura en passant
+                if (
+                    self.board.en_passant_pawn is not None
+                    and nova_pos
+                    == (
+                        self.board.en_passant_pawn.posicao[0],
+                        self.board.en_passant_pawn.posicao[1]
+                        + (-1 if self.cor == "Branco" else 1)
+                    )
+                ):
+                    self.board.capturar_peca(self.board.en_passant_pawn.posicao)
+                elif not self.board.casa_livre(nova_pos):
+                    self.board.capturar_peca(nova_pos)
+
                 self.posicao = nova_pos
                 self.board.colocar_peca(self, nova_pos)
                 self.rect.topleft = self.board.convert_pos_to_coord(nova_pos)
                 self.mov_correto = True
+
+                if abs(nova_pos[1] - origem[1]) == 2:
+                    self.board.en_passant_pawn = self
+                    self.en_passant_ativo = True
+                else:
+                    self.board.en_passant_pawn = None
+                    self.en_passant_ativo = False
+
                 self.contador_mov += 1
             else:
                 self.rect.topleft = self.board.convert_pos_to_coord(self.posicao)
                 self.mov_correto = False
+                self.board.en_passant_pawn = None
             self.moving = False
             self.board.casas_destacadas = []

@@ -33,9 +33,16 @@ black_panw_img = load_image('blackpanw.png')
 #Fiz um list compreheension para não ter que ficar definindo os 8 peões
 # Cria todos os peões brancos
 peao_branco = [Peao("Branco", (i, 1), white_panw_img, tabuleiro) for i in range(8)]
+tabuleiro.pecas_brancas.extend(peao_branco)
+
+# ponteiros para as listas dentro do tabuleiro
+peao_branco = tabuleiro.pecas_brancas
 
 # Cria todos os peões pretos
 peao_preto = [Peao("Preto", (i, 6), black_panw_img, tabuleiro) for i in range(8)]
+tabuleiro.pecas_pretas.extend(peao_preto)
+
+peao_preto = tabuleiro.pecas_pretas
 
 #Looping principal que faz o jogo ou engine rodar.
 while running:
