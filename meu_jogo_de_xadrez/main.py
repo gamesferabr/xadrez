@@ -193,7 +193,8 @@ while running:
 
                         # Se o movimento for correto, ele passa na condição e troca de turno
                         if pb.mov_correto:
-                            if pb.posicao[1] == 7:
+                            promocao_branco = 7 if tabuleiro.direcoes["Branco"] == 1 else 0
+                            if pb.posicao[1] == promocao_branco:
                                 pb.imagem = escolher_promocao("white")
 
                             #Variável que troca de turno
@@ -213,7 +214,8 @@ while running:
 
                        #Se o movimento for correto.
                         if pb2.mov_correto:
-                            if pb2.posicao[1] == 0:
+                            promocao_preto = 7 if tabuleiro.direcoes["Preto"] == 1 else 0
+                            if pb2.posicao[1] == promocao_preto:
                                 pb2.imagem = escolher_promocao("black")
 
                             #Variável que troca de turno
