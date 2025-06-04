@@ -67,11 +67,11 @@ while running:
                         #Inicia a movimentação do peão.
                         pb.iniciar_movimento(event)
                         
-           #Vez das peças pretas.
+            #Vez das peças pretas.
             elif turno == "Preto":
-                 
-                 #Looping para iterar em cada peça preta.
-                 for pb2 in peao_preto:
+
+                #Looping para iterar em cada peça preta.
+                for pb2 in peao_preto:
                     
                     #Ponto de colisão dos peões pretos.
                     if pb2.rect.collidepoint(event.pos):
@@ -93,7 +93,7 @@ while running:
                         
             
             elif turno == "Preto":
-                 for pb2 in peao_preto:
+                for pb2 in peao_preto:
                     if pb2.moving:
                         pb2.mover(event)
                         
@@ -135,16 +135,13 @@ while running:
                           
                           #Variável que troca de turno
                           turno = "Branco"
-                        
+    #Cria as imagens dentro do jogo do peão branco
+    for pb in peao_branco:
+        tela.blit(pb.imagem, pb.rect)
 
+    #Cria as imagens dentro do jogo do peão preto
+    for pb2 in peao_preto:
+        tela.blit(pb2.imagem, pb2.rect)
 
-        #Cria as imagens dentro do jogo do peão branco
-        for pb in peao_branco:
-         tela.blit(pb.imagem, pb.rect)
-        
-        #Cria as imagens dentro do jogo do peão preto
-        for pb2 in peao_preto:
-         tela.blit(pb2.imagem, pb2.rect)
-      
-        #Atualiza a tela do tabuleiro
-        pygame.display.update()      
+    #Atualiza a tela do tabuleiro
+    pygame.display.update()

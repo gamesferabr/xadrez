@@ -75,15 +75,15 @@ class Tabuleiro:
 
 
     def casa_livre(self, pos):
-     x,y = pos 
-     return self.estado_tabuleiro[x][y] is None
+        x, y = pos
+        return self.estado_tabuleiro[y][x] is None
 
 
     def colocar_peca(self, peca, pos):
-     x, y = pos
-     self.estado_tabuleiro[x][y] = peca.tipo_peca
+        x, y = pos
+        self.estado_tabuleiro[y][x] = peca.tipo_peca
 
 
     def remover_peca(self, pos):
-     x, y = pos
-     self.estado_tabuleiro[x][y] = None
+        x, y = pos
+        self.estado_tabuleiro[y][x] = None
