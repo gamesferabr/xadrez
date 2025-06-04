@@ -1,3 +1,30 @@
+def confirmar_voltar():
+    """Pergunta ao jogador se ele deseja voltar para a tela inicial."""
+    fonte = pygame.font.SysFont(None, 36)
+    texto = fonte.render("Voltar para a tela inicial?", True, (0, 0, 0))
+    rect_sim = pygame.Rect(LARGURA_TELA // 2 - 120, ALTURA_TELA // 2, 100, 50)
+    rect_nao = pygame.Rect(LARGURA_TELA // 2 + 20, ALTURA_TELA // 2, 100, 50)
+    while True:
+        tela.fill((180, 180, 180))
+        tela.blit(texto, texto.get_rect(center=(LARGURA_TELA // 2, ALTURA_TELA // 2 - 40)))
+        pygame.draw.rect(tela, (0, 200, 0), rect_sim)
+        pygame.draw.rect(tela, (200, 0, 0), rect_nao)
+        txt_sim = fonte.render("Sim", True, (0, 0, 0))
+        txt_nao = fonte.render("Não", True, (0, 0, 0))
+        tela.blit(txt_sim, txt_sim.get_rect(center=rect_sim.center))
+        tela.blit(txt_nao, txt_nao.get_rect(center=rect_nao.center))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if rect_sim.collidepoint(event.pos):
+                    return True
+                if rect_nao.collidepoint(event.pos):
+                    return False
+
+
 from jogo.regras import escolher_promocao
 import pygame
 from pygame.locals import *
@@ -60,112 +87,81 @@ while running:
         #Se o botão do mouse for pressionado, a variavel evento irá ser chamada para iterar e executar os movimentos das peças.
         elif event.type == pygame.MOUSEBUTTONDOWN:
             
-            #Se o turno for a vez das peças brancas.
-            if turno == "Branco":
-                
-                #Para iterar em cada peão branco.
-                for pb in peao_branco:
-                    
-                    #O collidepoint é o ponto de colisão das peças, cada imagem tem um ponto de colisão, quando ele é acionado, ele inicia o movimento.
-                    if pb.rect.collidepoint(event.pos):
-                        
-                        #A variavel tabuleiro faz o papel de calcular as casas que podem ser "Preenchidas" pelas peças.
-                        tabuleiro.calcular_casas_destacadas(pb)
-                        
-                        #Inicia a movimentação do peão.
-                        pb.iniciar_movimento(event)
-                        
-            #Vez das peças pretas.
-            elif turno == "Preto":
+fonte_botao = pygame.font.SysFont(None, 24)
+while True:
+    cor_jogador = escolher_cor_inicial()
+    tabuleiro = Tabuleiro(bottom_color=cor_jogador)
+    white_panw_img = load_image("whitepanw.png")
+    black_panw_img = load_image("blackpanw.png")
+    linha_branco = 6 if cor_jogador == "Branco" else 1
+    linha_preto = 6 if cor_jogador == "Preto" else 1
+    peao_branco = [Peao("Branco", (i, linha_branco), white_panw_img, tabuleiro) for i in range(8)]
+    tabuleiro.pecas_brancas.extend(peao_branco)
+    peao_branco = tabuleiro.pecas_brancas
+    peao_preto = [Peao("Preto", (i, linha_preto), black_panw_img, tabuleiro) for i in range(8)]
+    tabuleiro.pecas_pretas.extend(peao_preto)
+    peao_preto = tabuleiro.pecas_pretas
+    botao_voltar = pygame.Rect(LARGURA_TELA - 90, 10, 80, 30)
+    turno = "Branco"
+    running = True
+    while running:
+        tabuleiro.desenhar_tabuleiro(tela)
+        tabuleiro.desenhar_contador(tela)
+        pygame.draw.rect(tela, (100, 0, 0), botao_voltar)
+        txt_voltar = fonte_botao.render("Voltar", True, (255, 255, 255))
+        tela.blit(txt_voltar, txt_voltar.get_rect(center=botao_voltar.center))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if botao_voltar.collidepoint(event.pos):
+                    if confirmar_voltar():
+                        running = False
+                        break
+                else:
+                    if turno == "Branco":
+                        for pb in peao_branco:
+                            if pb.rect.collidepoint(event.pos):
+                                tabuleiro.calcular_casas_destacadas(pb)
+                                pb.iniciar_movimento(event)
+                    else:
+                        for pb2 in peao_preto:
+                            if pb2.rect.collidepoint(event.pos):
+                                tabuleiro.calcular_casas_destacadas(pb2)
+                                pb2.iniciar_movimento(event)
+            elif event.type == pygame.MOUSEMOTION:
+                if turno == "Branco":
+                    for pb in peao_branco:
+                        if pb.moving:
+                            pb.mover(event)
+                else:
+                    for pb2 in peao_preto:
+                        if pb2.moving:
+                            pb2.mover(event)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if turno == "Branco":
+                    for pb in peao_branco:
+                        if pb.moving:
+                            pb.finalizar_movimento(event)
+                            if pb.mov_correto:
+                                promocao_branco = 7 if tabuleiro.direcoes["Branco"] == 1 else 0
+                                if pb.posicao[1] == promocao_branco:
+                                    pb.imagem = escolher_promocao("white")
+                                turno = "Preto"
+                else:
+                    for pb2 in peao_preto:
+                        if pb2.moving:
+                            pb2.finalizar_movimento(event)
+                            if pb2.mov_correto:
+                                promocao_preto = 7 if tabuleiro.direcoes["Preto"] == 1 else 0
+                                if pb2.posicao[1] == promocao_preto:
+                                    pb2.imagem = escolher_promocao("black")
+                                turno = "Branco"
 
-                #Looping para iterar em cada peça preta.
-                for pb2 in peao_preto:
-                    
-                    #Ponto de colisão dos peões pretos.
-                    if pb2.rect.collidepoint(event.pos):
-                        
-                        #Calcula as possíveis casas.
-                        tabuleiro.calcular_casas_destacadas(pb2)
-                        
-                        #Inicia o movimento
-                        pb2.iniciar_movimento(event)
-                       
+        for pb in peao_branco:
+            tela.blit(pb.imagem, pb.rect)
+        for pb2 in peao_preto:
+            tela.blit(pb2.imagem, pb2.rect)
+        pygame.display.update()
 
-        
-        
-        elif event.type == pygame.MOUSEMOTION:
-            if turno == "Branco":
-                for pb in peao_branco:
-                    if pb.moving:
-                        pb.mover(event)
-                        
-            
-            elif turno == "Preto":
-                for pb2 in peao_preto:
-                    if pb2.moving:
-                        pb2.mover(event)
-                        
-
-        
-        
-        elif event.type == pygame.MOUSEBUTTONUP:
-           
-            #Turno das peças brancas.
-            if turno == "Branco":
-
-                #looping para iterar em cada peão.
-                for pb in peao_branco:
-
-                    if pb.moving:
-
-                        pb.finalizar_movimento(event)
-
-                        # Se o movimento for correto, ele passa na condição e troca de turno
-                        if pb.mov_correto:
-                            promocao_branco = 7 if tabuleiro.direcoes["Branco"] == 1 else 0
-                            if pb.posicao[1] == promocao_branco:
-                                pb.imagem = escolher_promocao(
-                                    "white", 
-                                    tabuleiro, 
-                                    LARGURA_TELA, 
-                                    ALTURA_TELA, 
-                                    tela)
-
-                            #Variável que troca de turno
-                            turno = "Preto"
-                       
-            
-            # Turno das peças pretas.
-            elif turno == "Preto":
-
-                #Looping para iterar cada peão preto.
-                for pb2 in peao_preto:
-
-                    if pb2.moving:
-
-                        #Finaliza o movimento do peão preto
-                        pb2.finalizar_movimento(event)
-
-                       #Se o movimento for correto.
-                        if pb2.mov_correto:
-                            promocao_preto = 7 if tabuleiro.direcoes["Preto"] == 1 else 0
-                            if pb2.posicao[1] == promocao_preto:
-                                pb2.imagem = escolher_promocao(
-                                    "black", 
-                                    tabuleiro, 
-                                    LARGURA_TELA, 
-                                    ALTURA_TELA, 
-                                    tela)
-
-                            #Variável que troca de turno
-                            turno = "Branco"
-    #Cria as imagens dentro do jogo do peão branco
-    for pb in peao_branco:
-        tela.blit(pb.imagem, pb.rect)
-
-    #Cria as imagens dentro do jogo do peão preto
-    for pb2 in peao_preto:
-        tela.blit(pb2.imagem, pb2.rect)
-
-    #Atualiza a tela do tabuleiro
-    pygame.display.update()
