@@ -20,7 +20,10 @@ class Peao:
     def iniciar_movimento(self, event):
         if event.button == 1 and self.rect.collidepoint(event.pos):
             self.moving = True
-            self._offset = (event.pos[0] - self.rect.x, event.pos[1] - self.rect.y)
+            self._offset = (
+                event.pos[0] - self.rect.x,
+                event.pos[1] - self.rect.y,
+            )
 
     def mover(self, event):
         if self.moving:

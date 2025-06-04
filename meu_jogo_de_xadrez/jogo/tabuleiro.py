@@ -10,6 +10,8 @@ class Tabuleiro:
         self.pecas_brancas = []
         self.pecas_pretas = []
         self.en_passant_pawn = None
+        self.capturas_brancas = 0
+        self.capturas_pretas = 0
         
         if bottom_color == "Preto":
             self.direcoes = {"Branco": 1, "Preto": -1}
@@ -20,9 +22,13 @@ class Tabuleiro:
 
     def convert_pos_to_coord(self, pos):
         x, y = pos
-        return x * self.tamanho_quadrado, y * self.tamanho_quadrado
+            if (
+                peca.contador_mov == 0
+                and 0 <= duas[1] < 8
+                and self.casa_livre(duas)
+            ):
 
-    def desenhar_tabuleiro(self, tela):
+
         for x in range(8):
             for y in range(8):
                 cor = BRANCO if (x + y) % 2 == 0 else PRETO
@@ -58,6 +64,18 @@ class Tabuleiro:
                 alvo = self.estado_tabuleiro[captura[1]][captura[0]]
                 if alvo is not None and alvo.cor != peca.cor:
                     self.casas_destacadas.append(captura)
+                self.capturas_brancas += 1
+                self.capturas_pretas += 1
+
+    def desenhar_contador(self, tela):
+        font = pygame.font.SysFont(None, 24)
+        texto = font.render(
+            f"Capturas - Branco: {self.capturas_brancas}  Preto: {self.capturas_pretas}",
+            True,
+            (0, 0, 0),
+        )
+        tela.blit(texto, (10, 10))
+
                 elif (
                     self.en_passant_pawn is not None
                     and self.en_passant_pawn.posicao == (x + dx, y)
