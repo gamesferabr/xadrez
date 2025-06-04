@@ -30,45 +30,53 @@ class Peao:
             )
 
     def finalizar_movimento(self, event):
-        if self.moving:
-            nova_pos = (
-                round(self.rect.x / self.board.tamanho_quadrado),
-                round(self.rect.y / self.board.tamanho_quadrado),
-            )
-            if nova_pos in self.board.casas_destacadas:
-                origem = self.posicao
-                self.board.remover_peca(origem)
+        """Conclude a drag operation and update the board if the move is valid."""
+        if not self.moving:
+            return
 
-                # captura en passant
-                if (
-                    self.board.en_passant_pawn is not None
-                    and nova_pos
-                    == (
-                        self.board.en_passant_pawn.posicao[0],
-                        self.board.en_passant_pawn.posicao[1]
-                        + (-1 if self.cor == "Branco" else 1)
-                    )
-                ):
-                    self.board.capturar_peca(self.board.en_passant_pawn.posicao)
-                elif not self.board.casa_livre(nova_pos):
-                    self.board.capturar_peca(nova_pos)
+        nova_pos = (
+            round(self.rect.x / self.board.tamanho_quadrado),
+            round(self.rect.y / self.board.tamanho_quadrado),
+        )
 
-                self.posicao = nova_pos
-                self.board.colocar_peca(self, nova_pos)
-                self.rect.topleft = self.board.convert_pos_to_coord(nova_pos)
-                self.mov_correto = True
-
-                if abs(nova_pos[1] - origem[1]) == 2:
-                    self.board.en_passant_pawn = self
-                    self.en_passant_ativo = True
-                else:
-                    self.board.en_passant_pawn = None
-                    self.en_passant_ativo = False
-
-                self.contador_mov += 1
-            else:
-                self.rect.topleft = self.board.convert_pos_to_coord(self.posicao)
-                self.mov_correto = False
-                self.board.en_passant_pawn = None
+        if nova_pos not in self.board.casas_destacadas:
+            # posição inválida, retorna a peça
+            self.rect.topleft = self.board.convert_pos_to_coord(self.posicao)
+            self.mov_correto = False
+            self.board.en_passant_pawn = None
             self.moving = False
             self.board.casas_destacadas = []
+            return
+
+        origem = self.posicao
+
+        # verificar se é captura en passant
+        direcao = 1 if self.cor == "Branco" else -1
+        if (
+            self.board.en_passant_pawn is not None
+            and nova_pos
+            == (
+                self.board.en_passant_pawn.posicao[0],
+                self.board.en_passant_pawn.posicao[1] + direcao * -1,
+            )
+        ):
+            self.board.capturar_peca(self.board.en_passant_pawn.posicao)
+        elif not self.board.casa_livre(nova_pos):
+            # captura normal
+            self.board.capturar_peca(nova_pos)
+
+        self.board.remover_peca(origem)
+        self.posicao = nova_pos
+        self.board.colocar_peca(self, nova_pos)
+        self.rect.topleft = self.board.convert_pos_to_coord(nova_pos)
+        self.mov_correto = True
+
+        if abs(nova_pos[1] - origem[1]) == 2:
+            self.board.en_passant_pawn = self
+            self.en_passant_ativo = True
+        else:
+            self.board.en_passant_pawn = None
+            self.en_passant_ativo = False
+        self.contador_mov += 1
+        self.moving = False
+        self.board.casas_destacadas = []
