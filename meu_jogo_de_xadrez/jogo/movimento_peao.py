@@ -51,16 +51,16 @@ class Peao:
         origem = self.posicao
 
         # verificar se é captura en passant
-        direcao = 1 if self.cor == "Branco" else -1
-        if (
-            self.board.en_passant_pawn is not None
-            and nova_pos
-            == (
-                self.board.en_passant_pawn.posicao[0],
-                self.board.en_passant_pawn.posicao[1] + direcao * -1,
+        if self.board.en_passant_pawn is not None:
+            pawn = self.board.en_passant_pawn
+            direcao_inimigo = 1 if pawn.cor == "Branco" else -1
+            destino_en_passant = (
+                pawn.posicao[0],
+                pawn.posicao[1] - direcao_inimigo,
             )
-        ):
-            self.board.capturar_peca(self.board.en_passant_pawn.posicao)
+            if nova_pos == destino_en_passant:
+                self.board.capturar_peca(pawn.posicao)
+                self.board.en_passant_pawn = None
         elif not self.board.casa_livre(nova_pos):
             # captura normal
             self.board.capturar_peca(nova_pos)
