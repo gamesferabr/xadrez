@@ -100,12 +100,12 @@ while True:
     tabuleiro = Tabuleiro(bottom_color=cor_jogador)
     white_panw_img = load_image("whitepanw.png")
     black_panw_img = load_image("blackpanw.png")
-    linha_branco = 6 if cor_jogador == "Branco" else 1
-    linha_preto = 6 if cor_jogador == "Preto" else 1
-    peao_branco = [Peao("Branco", (i, linha_branco), white_panw_img, tabuleiro) for i in range(8)]
+    white_pawn_img = load_image("whitepawn.png")
+    black_pawn_img = load_image("blackpawn.png")
+        Peao("Branco", (i, linha_branco), white_pawn_img, tabuleiro)
     tabuleiro.pecas_brancas.extend(peao_branco)
     peao_branco = tabuleiro.pecas_brancas
-    peao_preto = [Peao("Preto", (i, linha_preto), black_panw_img, tabuleiro) for i in range(8)]
+        Peao("Preto", (i, linha_preto), black_pawn_img, tabuleiro)
     peao_branco = [
         Peao("Branco", (i, linha_branco), white_panw_img, tabuleiro)
         for i in range(8)
