@@ -54,7 +54,7 @@ class Peao:
         capturou = False
         if self.board.en_passant_pawn is not None:
             pawn = self.board.en_passant_pawn
-            direcao_inimigo = 1 if pawn.cor == "Branco" else -1
+            direcao_inimigo = self.board.direcoes[pawn.cor]
             destino_en_passant = (
                 pawn.posicao[0],
                 pawn.posicao[1] - direcao_inimigo,

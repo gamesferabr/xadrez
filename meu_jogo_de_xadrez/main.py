@@ -6,6 +6,40 @@ from interface_grafica.tela import ALTURA_TELA, LARGURA_TELA
 from jogo.movimento_peao import Peao
 
 
+def escolher_cor_inicial():
+    """Mostra uma tela para o jogador escolher jogar de branco ou preto."""
+    font = pygame.font.SysFont(None, 48)
+    botao_branco = pygame.Rect(LARGURA_TELA // 4 - 75, ALTURA_TELA // 2 - 50, 150, 100)
+    botao_preto = pygame.Rect(3 * LARGURA_TELA // 4 - 75, ALTURA_TELA // 2 - 50, 150, 100)
+
+    while True:
+        tela.fill((120, 120, 120))
+        titulo = font.render("Escolha sua cor", True, (0, 0, 0))
+        tela.blit(titulo, titulo.get_rect(center=(LARGURA_TELA // 2, 150)))
+
+        pygame.draw.rect(tela, (255, 255, 255), botao_branco)
+        pygame.draw.rect(tela, (0, 0, 0), botao_preto)
+        pygame.draw.rect(tela, (0, 0, 0), botao_branco, 2)
+        pygame.draw.rect(tela, (255, 255, 255), botao_preto, 2)
+
+        txt_b = font.render("Branco", True, (0, 0, 0))
+        txt_p = font.render("Preto", True, (255, 255, 255))
+        tela.blit(txt_b, txt_b.get_rect(center=botao_branco.center))
+        tela.blit(txt_p, txt_p.get_rect(center=botao_preto.center))
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if botao_branco.collidepoint(event.pos):
+                    return "Branco"
+                if botao_preto.collidepoint(event.pos):
+                    return "Preto"
+
+
 def escolher_promocao(cor):
     """Exibe opções de promoção e retorna a imagem selecionada."""
     nomes = [
@@ -51,9 +85,11 @@ pygame.init()
 tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
 pygame.display.set_caption("Tabuleiro de Xadrez")
 
+# Tela inicial de seleção de cor
+cor_jogador = escolher_cor_inicial()
 
 # Cria um objeto de tabuleiro
-tabuleiro = Tabuleiro()
+tabuleiro = Tabuleiro(bottom_color=cor_jogador)
 tabuleiro.desenhar_tabuleiro(tela)
  
 
@@ -67,16 +103,15 @@ white_panw_img = load_image('whitepanw.png')
 black_panw_img = load_image('blackpanw.png')
 
 
-#Fiz um list compreheension para não ter que ficar definindo os 8 peões
-# Cria todos os peões brancos
-peao_branco = [Peao("Branco", (i, 1), white_panw_img, tabuleiro) for i in range(8)]
-tabuleiro.pecas_brancas.extend(peao_branco)
+# Cria todos os peões de acordo com a cor que ficou na parte inferior
+linha_branco = 6 if cor_jogador == "Branco" else 1
+linha_preto = 6 if cor_jogador == "Preto" else 1
 
-# ponteiros para as listas dentro do tabuleiro
+peao_branco = [Peao("Branco", (i, linha_branco), white_panw_img, tabuleiro) for i in range(8)]
+tabuleiro.pecas_brancas.extend(peao_branco)
 peao_branco = tabuleiro.pecas_brancas
 
-# Cria todos os peões pretos
-peao_preto = [Peao("Preto", (i, 6), black_panw_img, tabuleiro) for i in range(8)]
+peao_preto = [Peao("Preto", (i, linha_preto), black_panw_img, tabuleiro) for i in range(8)]
 tabuleiro.pecas_pretas.extend(peao_preto)
 
 peao_preto = tabuleiro.pecas_pretas

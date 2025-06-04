@@ -3,13 +3,18 @@ from interface_grafica.cores import BRANCO, PRETO, BRANCO_ESCURO, PRETO_CLARO
 
 
 class Tabuleiro:
-    def __init__(self):
+    def __init__(self, bottom_color="Preto"):
         self.tamanho_quadrado = 75
         self.estado_tabuleiro = [[None for _ in range(8)] for _ in range(8)]
         self.casas_destacadas = []
         self.pecas_brancas = []
         self.pecas_pretas = []
         self.en_passant_pawn = None
+        if bottom_color == "Preto":
+            self.direcoes = {"Branco": 1, "Preto": -1}
+        else:
+            self.direcoes = {"Branco": -1, "Preto": 1}
+        self.bottom_color = bottom_color
 
     def convert_pos_to_coord(self, pos):
         x, y = pos
@@ -35,7 +40,7 @@ class Tabuleiro:
     def calcular_casas_destacadas(self, peca):
         self.casas_destacadas = []
         x, y = peca.posicao
-        direcao = 1 if peca.cor == "Branco" else -1
+        direcao = self.direcoes[peca.cor]
         proxima = (x, y + direcao)
         if 0 <= proxima[1] < 8 and self.casa_livre(proxima):
             self.casas_destacadas.append(proxima)
