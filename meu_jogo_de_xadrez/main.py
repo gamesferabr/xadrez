@@ -1,8 +1,8 @@
 import pygame
 from pygame.locals import *
-from jogo.tabuleiro import Tabuleiro 
+from jogo.tabuleiro import Tabuleiro
 from jogo.pecas import *
-from interface_grafica.tela import ALTURA_TELA,LARGURA_TELA
+from interface_grafica.tela import ALTURA_TELA, LARGURA_TELA
 from jogo.movimento_peao import Peao
 
 
@@ -32,10 +32,10 @@ black_panw_img = load_image('blackpanw.png')
 
 #Fiz um list compreheension para não ter que ficar definindo os 8 peões
 # Cria todos os peões brancos
-peao_branco = [Peao("Branco",(i,1), white_panw_img) for i in range(0,8)]
+peao_branco = [Peao("Branco", (i, 1), white_panw_img, tabuleiro) for i in range(8)]
 
 # Cria todos os peões pretos
-peao_preto = [Peao("Preto",(i,6), black_panw_img) for i in range(0,8)]
+peao_preto = [Peao("Preto", (i, 6), black_panw_img, tabuleiro) for i in range(8)]
 
 #Looping principal que faz o jogo ou engine rodar.
 while running:
@@ -62,7 +62,7 @@ while running:
                     if pb.rect.collidepoint(event.pos):
                         
                         #A variavel tabuleiro faz o papel de calcular as casas que podem ser "Preenchidas" pelas peças.
-                        tabuleiro.calcular_casas_destacadas(pb,turno)
+                        tabuleiro.calcular_casas_destacadas(pb)
                         
                         #Inicia a movimentação do peão.
                         pb.iniciar_movimento(event)
@@ -77,7 +77,7 @@ while running:
                     if pb2.rect.collidepoint(event.pos):
                         
                         #Calcula as possíveis casas.
-                        tabuleiro.calcular_casas_destacadas(pb2,turno)
+                        tabuleiro.calcular_casas_destacadas(pb2)
                         
                         #Inicia o movimento
                         pb2.iniciar_movimento(event)
