@@ -1,9 +1,46 @@
 import pygame
 from pygame.locals import *
 from jogo.tabuleiro import Tabuleiro
-from jogo.pecas import *
+from jogo.pecas import load_image
 from interface_grafica.tela import ALTURA_TELA, LARGURA_TELA
 from jogo.movimento_peao import Peao
+
+
+def escolher_promocao(cor):
+    """Exibe opções de promoção e retorna a imagem selecionada."""
+    nomes = [
+        f"{cor.lower()}queen.png",
+        f"{cor.lower()}rook.png",
+        f"{cor.lower()}bishop.png",
+        f"{cor.lower()}knight.png",
+    ]
+    imagens = [load_image(n) for n in nomes]
+    tamanho = tabuleiro.tamanho_quadrado
+    inicio_x = (LARGURA_TELA - tamanho * 4) // 2
+    y = (ALTURA_TELA - tamanho) // 2
+    retangulos = [
+        pygame.Rect(inicio_x + i * tamanho, y, tamanho, tamanho)
+        for i in range(4)
+    ]
+    selecionando = True
+    while selecionando:
+        tabuleiro.desenhar_tabuleiro(tela)
+        for pb in tabuleiro.pecas_brancas:
+            tela.blit(pb.imagem, pb.rect)
+        for pb in tabuleiro.pecas_pretas:
+            tela.blit(pb.imagem, pb.rect)
+        for img, rect in zip(imagens, retangulos):
+            pygame.draw.rect(tela, (200, 200, 200), rect)
+            tela.blit(img, rect)
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                raise SystemExit
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for img, rect in zip(imagens, retangulos):
+                    if rect.collidepoint(event.pos):
+                        return img
 
 
 # Inicializa o Pygame
@@ -111,37 +148,41 @@ while running:
            
             #Turno das peças brancas.
             if turno == "Branco":
-                
+
                 #looping para iterar em cada peão.
                 for pb in peao_branco:
-                    
+
                     if pb.moving:
-                        
+
                         pb.finalizar_movimento(event)
-                       
+
                         # Se o movimento for correto, ele passa na condição e troca de turno
                         if pb.mov_correto:
-                          
-                          #Variável que troca de turno
-                          turno = "Preto"
+                            if pb.posicao[1] == 7:
+                                pb.imagem = escolher_promocao("white")
+
+                            #Variável que troca de turno
+                            turno = "Preto"
                        
             
             # Turno das peças pretas.
             elif turno == "Preto":
-                
+
                 #Looping para iterar cada peão preto.
                 for pb2 in peao_preto:
-                    
+
                     if pb2.moving:
-                        
+
                         #Finaliza o movimento do peão preto
                         pb2.finalizar_movimento(event)
-                       
+
                        #Se o movimento for correto.
                         if pb2.mov_correto:
-                          
-                          #Variável que troca de turno
-                          turno = "Branco"
+                            if pb2.posicao[1] == 0:
+                                pb2.imagem = escolher_promocao("black")
+
+                            #Variável que troca de turno
+                            turno = "Branco"
     #Cria as imagens dentro do jogo do peão branco
     for pb in peao_branco:
         tela.blit(pb.imagem, pb.rect)
