@@ -10,10 +10,12 @@ class Tabuleiro:
         self.pecas_brancas = []
         self.pecas_pretas = []
         self.en_passant_pawn = None
+        
         if bottom_color == "Preto":
             self.direcoes = {"Branco": 1, "Preto": -1}
         else:
             self.direcoes = {"Branco": -1, "Preto": 1}
+        
         self.bottom_color = bottom_color
 
     def convert_pos_to_coord(self, pos):
@@ -39,14 +41,17 @@ class Tabuleiro:
 
     def calcular_casas_destacadas(self, peca):
         self.casas_destacadas = []
+        
         x, y = peca.posicao
         direcao = self.direcoes[peca.cor]
         proxima = (x, y + direcao)
+        
         if 0 <= proxima[1] < 8 and self.casa_livre(proxima):
             self.casas_destacadas.append(proxima)
             duas = (x, y + 2 * direcao)
             if peca.contador_mov == 0 and 0 <= duas[1] < 8 and self.casa_livre(duas):
                 self.casas_destacadas.append(duas)
+        
         for dx in (-1, 1):
             captura = (x + dx, y + direcao)
             if 0 <= captura[0] < 8 and 0 <= captura[1] < 8:
@@ -59,6 +64,7 @@ class Tabuleiro:
                     and self.en_passant_pawn.cor != peca.cor
                 ):
                     self.casas_destacadas.append(captura)
+                    
     def ocupado(self, pos):
         x, y = pos
         return self.estado_tabuleiro[y][x] is not None
@@ -79,9 +85,11 @@ class Tabuleiro:
         x, y = pos
         peca = self.estado_tabuleiro[y][x]
         self.estado_tabuleiro[y][x] = None
+        
         if peca is not None:
             if peca.cor == "Branco" and peca in self.pecas_brancas:
                 self.pecas_brancas.remove(peca)
             elif peca.cor == "Preto" and peca in self.pecas_pretas:
                 self.pecas_pretas.remove(peca)
+        
         return peca

@@ -1,92 +1,21 @@
+from jogo.regras import escolher_promocao
 import pygame
 from pygame.locals import *
 from jogo.tabuleiro import Tabuleiro
 from jogo.pecas import load_image
 from interface_grafica.tela import ALTURA_TELA, LARGURA_TELA
 from jogo.movimento_peao import Peao
-
-
-def escolher_cor_inicial():
-    """Mostra uma tela para o jogador escolher jogar de branco ou preto."""
-    font = pygame.font.SysFont(None, 48)
-    botao_branco = pygame.Rect(LARGURA_TELA // 4 - 75, ALTURA_TELA // 2 - 50, 150, 100)
-    botao_preto = pygame.Rect(3 * LARGURA_TELA // 4 - 75, ALTURA_TELA // 2 - 50, 150, 100)
-
-    while True:
-        tela.fill((120, 120, 120))
-        titulo = font.render("Escolha sua cor", True, (0, 0, 0))
-        tela.blit(titulo, titulo.get_rect(center=(LARGURA_TELA // 2, 150)))
-
-        pygame.draw.rect(tela, (255, 255, 255), botao_branco)
-        pygame.draw.rect(tela, (0, 0, 0), botao_preto)
-        pygame.draw.rect(tela, (0, 0, 0), botao_branco, 2)
-        pygame.draw.rect(tela, (255, 255, 255), botao_preto, 2)
-
-        txt_b = font.render("Branco", True, (0, 0, 0))
-        txt_p = font.render("Preto", True, (255, 255, 255))
-        tela.blit(txt_b, txt_b.get_rect(center=botao_branco.center))
-        tela.blit(txt_p, txt_p.get_rect(center=botao_preto.center))
-
-        pygame.display.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                raise SystemExit
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if botao_branco.collidepoint(event.pos):
-                    return "Branco"
-                if botao_preto.collidepoint(event.pos):
-                    return "Preto"
-
-
-def escolher_promocao(cor):
-    """Exibe opções de promoção e retorna a imagem selecionada."""
-    nomes = [
-        f"{cor.lower()}queen.png",
-        f"{cor.lower()}rook.png",
-        f"{cor.lower()}bishop.png",
-        f"{cor.lower()}knight.png",
-    ]
-    imagens = [load_image(n) for n in nomes]
-    tamanho = tabuleiro.tamanho_quadrado
-    inicio_x = (LARGURA_TELA - tamanho * 4) // 2
-    y = (ALTURA_TELA - tamanho) // 2
-    retangulos = [
-        pygame.Rect(inicio_x + i * tamanho, y, tamanho, tamanho)
-        for i in range(4)
-    ]
-    selecionando = True
-    while selecionando:
-        tabuleiro.desenhar_tabuleiro(tela)
-        for pb in tabuleiro.pecas_brancas:
-            tela.blit(pb.imagem, pb.rect)
-        for pb in tabuleiro.pecas_pretas:
-            tela.blit(pb.imagem, pb.rect)
-        for img, rect in zip(imagens, retangulos):
-            pygame.draw.rect(tela, (200, 200, 200), rect)
-            tela.blit(img, rect)
-        pygame.display.update()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                raise SystemExit
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                for img, rect in zip(imagens, retangulos):
-                    if rect.collidepoint(event.pos):
-                        return img
-
+from interface_grafica.interface import escolher_cor_inicial
 
 # Inicializa o Pygame
 pygame.init()
-
 
 # Cria a janela do jogo
 tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
 pygame.display.set_caption("Tabuleiro de Xadrez")
 
 # Tela inicial de seleção de cor
-cor_jogador = escolher_cor_inicial()
+cor_jogador = escolher_cor_inicial(tela)
 
 # Cria um objeto de tabuleiro
 tabuleiro = Tabuleiro(bottom_color=cor_jogador)
@@ -195,7 +124,12 @@ while running:
                         if pb.mov_correto:
                             promocao_branco = 7 if tabuleiro.direcoes["Branco"] == 1 else 0
                             if pb.posicao[1] == promocao_branco:
-                                pb.imagem = escolher_promocao("white")
+                                pb.imagem = escolher_promocao(
+                                    "white", 
+                                    tabuleiro, 
+                                    LARGURA_TELA, 
+                                    ALTURA_TELA, 
+                                    tela)
 
                             #Variável que troca de turno
                             turno = "Preto"
@@ -216,7 +150,12 @@ while running:
                         if pb2.mov_correto:
                             promocao_preto = 7 if tabuleiro.direcoes["Preto"] == 1 else 0
                             if pb2.posicao[1] == promocao_preto:
-                                pb2.imagem = escolher_promocao("black")
+                                pb2.imagem = escolher_promocao(
+                                    "black", 
+                                    tabuleiro, 
+                                    LARGURA_TELA, 
+                                    ALTURA_TELA, 
+                                    tela)
 
                             #Variável que troca de turno
                             turno = "Branco"

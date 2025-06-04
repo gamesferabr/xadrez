@@ -80,6 +80,7 @@ class Peao:
         else:
             self.board.en_passant_pawn = None
             self.en_passant_ativo = False
+        
         self.contador_mov += 1
         self.moving = False
         self.board.casas_destacadas = []
