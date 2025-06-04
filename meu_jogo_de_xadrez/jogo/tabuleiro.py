@@ -22,9 +22,13 @@ class Tabuleiro:
 
     def convert_pos_to_coord(self, pos):
         x, y = pos
-        return x * self.tamanho_quadrado, y * self.tamanho_quadrado
+            if (
+                peca.contador_mov == 0
+                and 0 <= duas[1] < 8
+                and self.casa_livre(duas)
+            ):
 
-    def desenhar_tabuleiro(self, tela):
+
         for x in range(8):
             for y in range(8):
                 cor = BRANCO if (x + y) % 2 == 0 else PRETO
