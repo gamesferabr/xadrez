@@ -2,7 +2,7 @@ import pygame
 from jogo.regras import movimento_captura_rei
 
 
-class Peao:
+class Rei:
     def __init__(self, cor, posicao_inicial, imagem, tabuleiro):
         self.cor = cor
         self.posicao = posicao_inicial
@@ -16,15 +16,12 @@ class Peao:
         self.mov_correto = False
         self.contador_mov = 0
         self._offset = (0, 0)
-        self.en_passant_ativo = False
+        self.ja_moveu = False
 
     def iniciar_movimento(self, event):
         if event.button == 1 and self.rect.collidepoint(event.pos):
             self.moving = True
-            self._offset = (
-                event.pos[0] - self.rect.x,
-                event.pos[1] - self.rect.y,
-            )
+            self._offset = (event.pos[0] - self.rect.x, event.pos[1] - self.rect.y)
 
     def mover(self, event):
         if self.moving:
@@ -34,7 +31,7 @@ class Peao:
             )
 
     def finalizar_movimento(self, event):
-        """Conclude a drag operation and update the board if the move is valid."""
+        """Conclude o movimento do rei e verifica se é válido."""
         if not self.moving:
             return
 
@@ -47,7 +44,6 @@ class Peao:
             # posição inválida, retorna a peça
             self.rect.topleft = self.board.convert_pos_to_coord(self.posicao)
             self.mov_correto = False
-            self.board.en_passant_pawn = None
             self.moving = False
             self.board.casas_destacadas = []
             return
@@ -57,44 +53,55 @@ class Peao:
             # Impedir movimento que captura rei
             self.rect.topleft = self.board.convert_pos_to_coord(self.posicao)
             self.mov_correto = False
-            self.board.en_passant_pawn = None
             self.moving = False
             self.board.casas_destacadas = []
             return
 
         origem = self.posicao
 
-        # verificar se é captura en passant
-        capturou = False
-        if self.board.en_passant_pawn is not None:
-            pawn = self.board.en_passant_pawn
-            direcao_inimigo = self.board.direcoes[pawn.cor]
-            destino_en_passant = (
-                pawn.posicao[0],
-                pawn.posicao[1] - direcao_inimigo,
-            )
-            if nova_pos == destino_en_passant:
-                self.board.capturar_peca(pawn.posicao)
-                self.board.en_passant_pawn = None
-                capturou = True
-
-        if not capturou and not self.board.casa_livre(nova_pos):
-            # captura normal
+        # Verificar se há peça na nova posição para capturar
+        if not self.board.casa_livre(nova_pos):
             self.board.capturar_peca(nova_pos)
 
+        # Mover o rei
         self.board.remover_peca(origem)
         self.posicao = nova_pos
         self.board.colocar_peca(self, nova_pos)
         self.rect.topleft = self.board.convert_pos_to_coord(nova_pos)
         self.mov_correto = True
-
-        if abs(nova_pos[1] - origem[1]) == 2:
-            self.board.en_passant_pawn = self
-            self.en_passant_ativo = True
-        else:
-            self.board.en_passant_pawn = None
-            self.en_passant_ativo = False
         
         self.contador_mov += 1
+        self.ja_moveu = True
         self.moving = False
         self.board.casas_destacadas = []
+
+    def get_movimentos_possiveis(self):
+        """Retorna todos os movimentos possíveis do rei (sem validação de cheque)."""
+        movimentos = []
+        x, y = self.posicao
+        
+        # Rei pode mover uma casa em qualquer direção
+        direcoes = [
+            (-1, -1), (-1, 0), (-1, 1),  # linha superior
+            (0, -1),           (0, 1),   # lados
+            (1, -1),  (1, 0),  (1, 1)    # linha inferior
+        ]
+        
+        for dx, dy in direcoes:
+            nova_x, nova_y = x + dx, y + dy
+            
+            # Verificar se está dentro do tabuleiro
+            if 0 <= nova_x < 8 and 0 <= nova_y < 8:
+                nova_pos = (nova_x, nova_y)
+                
+                # Pode mover para casa vazia ou capturar peça inimiga
+                if self.board.casa_livre(nova_pos):
+                    movimentos.append(nova_pos)
+                else:
+                    peca_destino = self.board.estado_tabuleiro[nova_y][nova_x]
+                    if peca_destino.cor != self.cor:
+                        # Verificar se não está tentando capturar um rei
+                        if not hasattr(peca_destino, 'ja_moveu'):  # Não é rei
+                            movimentos.append(nova_pos)
+        
+        return movimentos
