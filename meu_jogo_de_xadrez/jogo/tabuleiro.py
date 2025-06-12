@@ -42,6 +42,21 @@ class Tabuleiro:
     def calcular_casas_destacadas(self, peca):
         self.casas_destacadas = []
         
+        # Verificar se é um rei (tem atributo 'ja_moveu')
+        if hasattr(peca, 'ja_moveu'):
+            self.calcular_movimentos_rei(peca)
+        # Verificar se é um peão (tem atributo 'en_passant_ativo')
+        elif hasattr(peca, 'en_passant_ativo'):
+            self.calcular_movimentos_peao(peca)
+    
+    def calcular_movimentos_rei(self, rei):
+        """Calcula os movimentos válidos do rei."""
+        from jogo.regras import obter_movimentos_validos
+        movimentos_validos = obter_movimentos_validos(self, rei)
+        self.casas_destacadas = movimentos_validos
+    
+    def calcular_movimentos_peao(self, peca):
+        """Calcula os movimentos válidos do peão (lógica original)."""
         x, y = peca.posicao
         direcao = self.direcoes[peca.cor]
         proxima = (x, y + direcao)
@@ -57,7 +72,9 @@ class Tabuleiro:
             if 0 <= captura[0] < 8 and 0 <= captura[1] < 8:
                 alvo = self.estado_tabuleiro[captura[1]][captura[0]]
                 if alvo is not None and alvo.cor != peca.cor:
-                    self.casas_destacadas.append(captura)
+                    # Verificar se o alvo não é um rei
+                    if not hasattr(alvo, 'ja_moveu'):  # Se não for rei
+                        self.casas_destacadas.append(captura)
                 elif (
                     self.en_passant_pawn is not None
                     and self.en_passant_pawn.posicao == (x + dx, y)
@@ -84,6 +101,13 @@ class Tabuleiro:
     def capturar_peca(self, pos):
         x, y = pos
         peca = self.estado_tabuleiro[y][x]
+        
+        # Verificar se a peça é um rei - não permitir captura de reis
+        if peca is not None and hasattr(peca, 'ja_moveu'):  # Se for rei
+            # Não permitir a captura, só retornar a peça
+            return peca
+        
+        # Para peças que não são reis, proceder normalmente
         self.estado_tabuleiro[y][x] = None
         
         if peca is not None:
