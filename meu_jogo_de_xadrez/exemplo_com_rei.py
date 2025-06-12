@@ -29,8 +29,8 @@ jogo_terminado = False
 mensagem_final = ""
 
 # Carrega as imagens
-white_panw_img = load_image('whitepanw.png')
-black_panw_img = load_image('blackpanw.png')
+white_panw_img = load_image('whitepawn.png')
+black_panw_img = load_image('blackpawn.png')
 white_king_img = load_image('whiteking.png')
 black_king_img = load_image('blackking.png')
 
@@ -193,4 +193,4 @@ while running:
     # Atualiza a tela
     pygame.display.update()
 
-pygame.quit() 
+pygame.quit()

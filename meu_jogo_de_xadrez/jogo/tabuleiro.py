@@ -10,6 +10,8 @@ class Tabuleiro:
         self.pecas_brancas = []
         self.pecas_pretas = []
         self.en_passant_pawn = None
+        self.capturas_brancas = 0
+        self.capturas_pretas = 0
         
         if bottom_color == "Preto":
             self.direcoes = {"Branco": 1, "Preto": -1}
@@ -113,7 +115,9 @@ class Tabuleiro:
         if peca is not None:
             if peca.cor == "Branco" and peca in self.pecas_brancas:
                 self.pecas_brancas.remove(peca)
+                self.capturas_pretas += 1
             elif peca.cor == "Preto" and peca in self.pecas_pretas:
                 self.pecas_pretas.remove(peca)
+                self.capturas_brancas += 1
         
         return peca
